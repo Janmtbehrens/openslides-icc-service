@@ -11,7 +11,6 @@ import (
 	"github.com/OpenSlides/openslides-go/auth"
 	"github.com/OpenSlides/openslides-go/environment"
 	"github.com/OpenSlides/openslides-go/oslog"
-	messageBusRedis "github.com/OpenSlides/openslides-go/redis"
 	"github.com/OpenSlides/openslides-icc-service/internal/applause"
 	"github.com/OpenSlides/openslides-icc-service/internal/icchttp"
 	"github.com/OpenSlides/openslides-icc-service/internal/notify"
@@ -100,9 +99,6 @@ func initService(lookup environment.Environmenter) (func(context.Context) error,
 	var backgroundTasks []func(context.Context, func(error))
 	listenAddr := ":" + envICCServicePort.Value(lookup)
 
-	// Redis as message bus for datastore and logout events.
-	messageBus := messageBusRedis.New(lookup)
-
 	// Datastore Service.
 	database, err := applause.Flow(lookup)
 	if err != nil {
@@ -110,7 +106,7 @@ func initService(lookup environment.Environmenter) (func(context.Context) error,
 	}
 
 	// Auth Service.
-	authService, authBackground, err := auth.New(lookup, messageBus)
+	authService, authBackground, err := auth.New(lookup)
 	if err != nil {
 		return nil, fmt.Errorf("init auth system: %w", err)
 	}
